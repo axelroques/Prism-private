@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+
+@layer base {
+  html, body {
+    @apply h-full overflow-hidden;
+    font-family: 'Quicksand', system-ui, sans-serif;
+    font-size: 14pt;
+  }
+
+  body {
+    @apply bg-stone-900 text-stone-100;
+  }
+
+  #app {
+    @apply h-full flex flex-col;
+  }
+}
