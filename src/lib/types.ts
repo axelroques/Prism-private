@@ -1,10 +1,3 @@
-export interface RawBibEntry {
-  id: string;
-  type: string;
-  raw: unknown;
-  tags: Record<string, string>;
-}
-
 export interface BibEntry {
   id: string;
   title?: string;
@@ -38,10 +31,14 @@ export interface PaperMeta {
 }
 
 export interface Session {
-  fileHash: string;
-  fileName: string;
+  name: string;
   createdAt: string;
   updatedAt: string;
+  entries: BibEntry[];
   papers: Record<string, PaperMeta>; // bibEntry.id → meta
+  dimensions: Dimension[];
+}
+
+export interface Template {
   dimensions: Dimension[];
 }

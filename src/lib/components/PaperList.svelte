@@ -6,6 +6,7 @@
   export let dimensions: Dimension[] = [];
   export let selectedId: string | null = null;
   export let onSelect: (id: string) => void;
+  export let onDisplayedChange: (ids: string[]) => void = () => {};
   export let onExportBib: (entries: BibEntry[]) => void;
   export let onExportCsv: (entries: BibEntry[]) => void;
 
@@ -18,6 +19,7 @@
   let activeTab: Tab = defaultTab;
   let sortField: SortField = 'year';
   let sortOrder: SortOrder = 'asc';
+  let displayed: BibEntry[] = [];
 
   function getActiveTags(entryId: string): { tag: Tag; color: string }[] {
     return dimensions.flatMap(dim =>
@@ -103,7 +105,10 @@
     });
   }
 
-  $: displayed = sortEntries(filterEntries(grouped[activeTab], search, papers, dimensions), sortField, sortOrder);
+  $: {
+    displayed = sortEntries(filterEntries(grouped[activeTab], search, papers, dimensions), sortField, sortOrder);
+    onDisplayedChange(displayed.map(e => e.id));
+  }
 
   function shortAuthor(author: string): string {
     if (!author) return 'Unknown';

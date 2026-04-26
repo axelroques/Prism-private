@@ -16,6 +16,8 @@
   let newTagLabel = '';
   let confirmDelete: { type: 'dimension' | 'tag', dimId: string, tagId?: string } | null = null;
 
+  function focus(el: HTMLElement) { el.focus(); }
+
   function isActive(dimId: string, tagId: string): boolean {
     return meta?.tags?.[dimId]?.includes(tagId) ?? false;
   }
@@ -72,7 +74,7 @@
     <span class="text-xs font-bold uppercase tracking-widest text-sand-600">@Dimensions & #Tags</span>
     <button
       on:click={() => { addingDimension = true; }}
-      class="text-xs font-semibold text-amber-500 border border-amber-500 rounded px-2 py-0.5 hover:bg-amber-500 hover:!text-[#1c1a16] transition-colors cursor-pointer"
+      class="text-xs font-semibold text-amber-500 border border-amber-500 rounded px-2 py-1 hover:bg-amber-500 hover:!text-[#1c1a16] transition-colors cursor-pointer"
     >+ @Dimension</button>
   </div>
 
@@ -135,12 +137,12 @@
 
           {#if addingTagFor === dim.id}
             <input
+              use:focus
               type="text"
               placeholder="#tag name…"
               bind:value={newTagLabel}
               on:keydown={(e) => handleTagKeydown(e, dim.id)}
               class="text-xs bg-charcoal-900 border border-amber-400/40 text-sand-200 placeholder-stone-600 rounded-full px-3 py-0.5 w-28 outline-none focus:border-amber-400"
-              autofocus
             />
           {/if}
         </div>
@@ -152,12 +154,12 @@
     {#if addingDimension}
       <div class="flex items-center gap-2">
         <input
+          use:focus
           type="text"
           placeholder="@NewDimension"
           bind:value={newDimensionLabel}
           on:keydown={handleDimKeydown}
           class="text-xs bg-charcoal-900 border border-amber-400/40 text-sand-200 placeholder-stone-600 rounded px-3 py-1.5 flex-1 outline-none focus:border-amber-400"
-          autofocus
         />
         <button
           on:click={submitDimension}
