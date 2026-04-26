@@ -181,6 +181,7 @@
       <PaperList
         {entries}
         papers={session?.papers ?? {}}
+        dimensions={session?.dimensions ?? []}
         {selectedId}
         onSelect={(id) => { selectedId = id; }}
         defaultTab={entries.some(e => (session?.papers[e.id]?.status ?? 'unsorted') === 'unsorted') ? 'unsorted' : 'accepted'}

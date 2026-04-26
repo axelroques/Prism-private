@@ -1,10 +1,11 @@
 <script lang="ts">
-  import type { BibEntry, PaperMeta, PaperStatus } from '../types';
+  import type { BibEntry, Dimension, PaperMeta, PaperStatus } from '../types';
 
   export let entries: BibEntry[] = [];
   export let papers: Record<string, PaperMeta> = {};
   export let selectedId: string | null = null;
   export let onSelect: (id: string) => void;
+  export let dimensions: Dimension[] = [];
 
   type Tab = 'unsorted' | 'accepted' | 'rejected';
   export let defaultTab: Tab = 'unsorted';
@@ -16,7 +17,54 @@
     rejected: entries.filter(e => (papers[e.id]?.status ?? 'unsorted') === 'rejected'),
   };
 
-  $: displayed = grouped[activeTab];
+
+  let search = '';
+  function filterEntries(entries: BibEntry[], _search: string, _papers: Record<string, PaperMeta>, _dimensions: Dimension[]): BibEntry[] {
+    const q = search.trim().toLowerCase();
+    if (!q) return entries;
+
+    // Dimension search: @dimensionname
+    if (q.startsWith('@')) {
+      const dimQuery = q.slice(1);
+      const dim = dimensions.find(d => d.label.toLowerCase().includes(dimQuery));
+      if (!dim) return [];
+      return entries.filter(e => {
+        const paperTags = papers[e.id]?.tags?.[dim.id] ?? [];
+        return paperTags.length > 0;
+      });
+    }
+
+    // Tag search: #tagname
+    if (q.startsWith('#')) {
+      const tagQuery = q.slice(1);
+      return entries.filter(e => {
+        return dimensions.some(dim => {
+          const activeTags = papers[e.id]?.tags?.[dim.id] ?? [];
+          return activeTags.some(tagId => {
+            const tag = dim.tags.find(t => t.id === tagId);
+            return tag?.label.toLowerCase().includes(tagQuery);
+          });
+        });
+      });
+    }
+
+    // Field search: field:value (e.g. author:smith, year:2023)
+    const fieldMatch = q.match(/^(\w+):(.+)$/);
+    if (fieldMatch) {
+      const [, field, value] = fieldMatch;
+      return entries.filter(e =>
+        e[field]?.toLowerCase().includes(value.trim())
+      );
+    }
+
+    // Default: title search
+    return entries.filter(e =>
+      (e.title ?? '').toLowerCase().includes(q)
+    );
+  }
+
+  $: displayed = filterEntries(grouped[activeTab], search, papers, dimensions);
+
 
   function shortAuthor(author: string): string {
     if (!author) return 'Unknown';
@@ -50,6 +98,16 @@
         </span>
       </button>
     {/each}
+  </div>
+
+  <!-- Search bar -->
+  <div class="px-2 py-2 border-b border-stone-700 shrink-0">
+    <input
+      type="text"
+      bind:value={search}
+      placeholder="Search title, field:value, @dimension, #tag"
+      class="w-full text-xs bg-charcoal-900 border border-stone-700 text-sand-200 placeholder-stone-600 rounded px-3 py-1.5 outline-none focus:border-amber-400/60"
+    />
   </div>
 
   <!-- List -->

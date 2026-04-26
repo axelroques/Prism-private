@@ -67,7 +67,7 @@
 
         <!-- Dimension header -->
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-sand-300">{dim.label}</span>
+          <span class="text-xs font-bold text-sand-300">@{dim.label}</span>
           <div class="flex items-center gap-3">
             <button
               on:click={() => { addingTagFor = dim.id; newTagLabel = ''; }}
@@ -91,7 +91,7 @@
                   {isActive(dim.id, tag.id)
                     ? 'bg-amber-400/20 border-amber-400/60 text-amber-300'
                     : 'border-stone-600 text-sand-500 hover:border-amber-400/40 hover:text-amber-400'}"
-              >{tag.label}</button>
+              >#{tag.label}</button>
               <button
                 on:click|stopPropagation={() => onDeleteTag(dim.id, tag.id)}
                 class="absolute right-1.5 text-[10px] text-stone-600 hover:text-red-400 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
@@ -103,7 +103,7 @@
           {#if addingTagFor === dim.id}
             <input
               type="text"
-              placeholder="tag name…"
+              placeholder="#NewTag"
               bind:value={newTagLabel}
               on:keydown={(e) => handleTagKeydown(e, dim.id)}
               class="text-xs bg-charcoal-900 border border-amber-400/40 text-sand-200 placeholder-stone-600 rounded-full px-3 py-0.5 w-28 outline-none focus:border-amber-400"
@@ -123,7 +123,7 @@
       <div class="flex items-center gap-2">
         <input
           type="text"
-          placeholder="dimension name…"
+          placeholder="@NewDimension"
           bind:value={newDimensionLabel}
           on:keydown={handleDimKeydown}
           class="text-xs bg-charcoal-900 border border-amber-400/40 text-sand-200 placeholder-stone-600 rounded px-3 py-1.5 flex-1 outline-none focus:border-amber-400"
