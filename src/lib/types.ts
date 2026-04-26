@@ -28,6 +28,7 @@ export interface Tag {
 export interface Dimension {
   id: string;
   label: string;
+  color: string;
   tags: Tag[];
 }
 

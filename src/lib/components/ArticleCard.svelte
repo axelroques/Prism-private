@@ -1,9 +1,11 @@
 <script lang="ts">
-  import type { BibEntry, PaperMeta, PaperStatus } from '../types';
+  import type { BibEntry, Dimension, PaperMeta, PaperStatus } from '../types';
 
   export let entry: BibEntry;
   export let meta: PaperMeta;
+  export let dimensions: Dimension[] = [];
   export let onSetStatus: (status: PaperStatus) => void;
+  export let onToggleTag: (dimensionId: string, tagId: string) => void;
 
   $: status = meta?.status ?? 'unsorted';
 
@@ -75,6 +77,29 @@
     <div class="border-t border-stone-700 pt-4">
       <p class="text-[10px] font-bold uppercase tracking-widest text-sand-600 mb-2">Abstract</p>
       <p class="text-xs text-sand-400 leading-relaxed max-h-48 overflow-y-auto pr-1">{entry.abstract}</p>
+    </div>
+  {/if}
+
+  <!-- Tags -->
+  {#if dimensions.some(d => (meta?.tags?.[d.id] ?? []).length > 0)}
+    <div class="border-t border-stone-700 pt-4 flex flex-col gap-2">
+      <p class="text-[10px] font-bold uppercase tracking-widest text-sand-600">Tags</p>
+      <div class="flex flex-wrap gap-1.5">
+        {#each dimensions as dim}
+          {#each (meta?.tags?.[dim.id] ?? []) as tagId}
+            {@const tag = dim.tags.find(t => t.id === tagId)}
+            {#if tag}
+              <button
+                on:click={() => onToggleTag(dim.id, tagId)}
+                class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full border transition-colors cursor-pointer"
+                style="border-color: {dim.color}; background-color: {dim.color}; color: #1c1a16;"
+                on:mouseenter={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = dim.color; }}
+                on:mouseleave={(e) => { e.currentTarget.style.backgroundColor = dim.color; e.currentTarget.style.color = '#1c1a16'; }}
+              >#{tag.label}</button>
+            {/if}
+          {/each}
+        {/each}
+      </div>
     </div>
   {/if}
 

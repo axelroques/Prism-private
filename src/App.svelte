@@ -5,7 +5,8 @@
   import ArticleCard from './lib/components/ArticleCard.svelte';
   import TagPanel from './lib/components/TagPanel.svelte';
 
-  import type { BibEntry, PaperMeta, PaperStatus, Dimension, Session } from './lib/types';
+  import type { BibEntry, PaperMeta, PaperStatus, Session } from './lib/types';
+  import { exportBib, exportCsv, downloadFile } from './lib/exporter';
   import { parseBib } from './lib/parser';
   import { simpleHash } from './lib/utils';
   import {
@@ -80,6 +81,18 @@
     persist();
   }
 
+  // ── Export list content ─────────────────────────────────────────────────────────
+  function handleExportBib(entries: BibEntry[]) {
+    const content = exportBib(entries);
+    downloadFile(content, 'prism-export.bib', 'text/plain');
+  }
+
+  function handleExportCsv(entries: BibEntry[]) {
+    if (!session) return;
+    const content = exportCsv(entries, session.papers, session.dimensions);
+    downloadFile(content, 'prism-export.csv', 'text/csv');
+  }
+
   // ── Review actions ─────────────────────────────────────────────────────────
   function setStatus(status: PaperStatus) {
     if (!selectedId || !session) return;
@@ -98,11 +111,22 @@
   }
 
   // ── Tag actions ────────────────────────────────────────────────────────────
+  const PALETTE = ['#f59e0b', '#34d399', '#60a5fa', '#f472b6', '#a78bfa', '#fb923c', '#22d3ee'];
   function addDimension(label: string) {
     if (!session) return;
+    const color = PALETTE[session.dimensions.length % PALETTE.length];
     session.dimensions = [...session.dimensions, {
-      id: crypto.randomUUID(), label, tags: [],
+      id: crypto.randomUUID(), label, color, tags: [],
     }];
+    persist();
+  }
+
+  function updateDimensionColor(dimId: string, color: string) {
+    if (!session) return;
+    session.dimensions = session.dimensions.map(d =>
+      d.id === dimId ? { ...d, color } : d
+    );
+    session = session;
     persist();
   }
 
@@ -182,9 +206,11 @@
         {entries}
         papers={session?.papers ?? {}}
         dimensions={session?.dimensions ?? []}
+        defaultTab={entries.some(e => (session?.papers[e.id]?.status ?? 'unsorted') === 'unsorted') ? 'unsorted' : 'accepted'}
         {selectedId}
         onSelect={(id) => { selectedId = id; }}
-        defaultTab={entries.some(e => (session?.papers[e.id]?.status ?? 'unsorted') === 'unsorted') ? 'unsorted' : 'accepted'}
+        onExportBib={handleExportBib}
+        onExportCsv={handleExportCsv}
       />
 
       <!-- Right: detail + tags -->
@@ -193,7 +219,9 @@
           <ArticleCard
             entry={selectedEntry}
             meta={selectedMeta ?? { status: 'unsorted', tags: {} }}
+            dimensions={session.dimensions}
             onSetStatus={setStatus}
+            onToggleTag={toggleTag}
           />
           <TagPanel
             dimensions={session.dimensions}
@@ -201,6 +229,7 @@
             onToggleTag={toggleTag}
             onAddDimension={addDimension}
             onAddTag={addTag}
+            onUpdateDimensionColor={updateDimensionColor}
             onDeleteDimension={deleteDimension}
             onDeleteTag={deleteTag}
           />
