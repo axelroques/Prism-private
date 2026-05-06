@@ -47,7 +47,7 @@
       on:click={() => onViewChange('review')}
       class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded border transition-colors cursor-pointer
         {activeView === 'review'
-          ? 'bg-amber-500 border-amber-500 text-charcoal-900'
+          ? 'bg-amber-500 border-amber-500 text-[#1c1a16]'
           : 'border-stone-600 text-sand-600 hover:bg-charcoal-700 hover:text-sand-300'}"
     >
       <!-- Heroicon: document-text -->
@@ -63,7 +63,7 @@
       disabled={!session}
       class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded border transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default
         {activeView === 'analysis'
-          ? 'bg-amber-500 border-amber-500 text-charcoal-900'
+          ? 'bg-amber-500 border-amber-500 text-[#1c1a16]'
           : 'border-stone-600 text-sand-600 hover:bg-charcoal-700 hover:text-sand-300'}"
     >
       <!-- Heroicon: chart-bar -->

@@ -222,7 +222,7 @@
       <div class="flex gap-3 mt-2">
         <button
           on:click={handleNewSession}
-          class="px-4 py-2 text-sm font-bold rounded-lg bg-amber-500 text-charcoal-900 hover:bg-amber-400 transition-colors cursor-pointer"
+          class="px-4 py-2 text-sm font-bold rounded-lg bg-amber-500 text-[#1c1a16] hover:bg-amber-400 transition-colors cursor-pointer"
         >New session</button>
         <button
           on:click={() => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.json'; i.onchange = (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) handleOpenSession(f); }; i.click(); }}
