@@ -3,10 +3,12 @@
 
   export let session: Session | null = null;
   export let dirty: boolean = false;
+  export let activeView: 'review' | 'analysis' = 'review';
   export let onNewSession: () => void;
   export let onOpenSession: (file: File) => void;
   export let onSaveSession: () => void;
   export let onAddBib: (file: File) => void;
+  export let onViewChange: (view: 'review' | 'analysis') => void;
 
   let bibInput: HTMLInputElement;
   let sessionInput: HTMLInputElement;
@@ -35,6 +37,42 @@
   <div class="flex items-center gap-2 shrink-0">
     <span class="text-amber-400 text-base leading-none">◈</span>
     <span class="text-sand-100 font-bold text-xs tracking-widest uppercase">Prism</span>
+  </div>
+
+  <!-- View switcher -->
+  <div class="flex items-center gap-1 shrink-0">
+
+    <!-- Review -->
+    <button
+      on:click={() => onViewChange('review')}
+      class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded border transition-colors cursor-pointer
+        {activeView === 'review'
+          ? 'bg-amber-500 border-amber-500 text-charcoal-900'
+          : 'border-stone-600 text-sand-600 hover:bg-charcoal-700 hover:text-sand-300'}"
+    >
+      <!-- Heroicon: document-text -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      Review
+    </button>
+
+    <!-- Analysis -->
+    <button
+      on:click={() => onViewChange('analysis')}
+      disabled={!session}
+      class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded border transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default
+        {activeView === 'analysis'
+          ? 'bg-amber-500 border-amber-500 text-charcoal-900'
+          : 'border-stone-600 text-sand-600 hover:bg-charcoal-700 hover:text-sand-300'}"
+    >
+      <!-- Heroicon: chart-bar -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+      Analysis
+    </button>
+
   </div>
 
   <!-- Divider -->

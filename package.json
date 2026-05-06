@@ -12,6 +12,7 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@tsconfig/svelte": "^5.0.8",
+    "@types/d3": "^7.4.3",
     "@types/node": "^24.12.2",
     "svelte": "^5.55.4",
     "svelte-check": "^4.4.6",
@@ -21,6 +22,7 @@
   "dependencies": {
     "@orcid/bibtex-parse-js": "^0.0.25",
     "@tailwindcss/vite": "^4.2.4",
+    "d3": "^7.9.0",
     "tailwindcss": "^4.2.4"
   }
 }

@@ -6,6 +6,7 @@
   import PaperList from './lib/components/PaperList.svelte';
   import ArticleCard from './lib/components/ArticleCard.svelte';
   import NewSessionModal from './lib/components/NewSessionModal.svelte';
+  import AnalysisPanel from './lib/components/analysis/AnalysisPanel.svelte';
 
   import type { BibEntry, PaperMeta, PaperStatus, Session, Template } from './lib/types';
   import { exportBib, exportCsv, downloadFile } from './lib/exporter';
@@ -16,7 +17,8 @@
   } from './lib/session';
 
   // ── State ──────────────────────────────────────────────────────────────────
-  let entries: BibEntry[] = [];
+  let activeView: 'review' | 'analysis' = 'review';
+  // let entries: BibEntry[] = [];
   let session: Session | null = null;
   let selectedId: string | null = null;
   let displayedIds: string[] = [];
@@ -25,22 +27,20 @@
 
   // ── Derived ────────────────────────────────────────────────────────────────
   $: entries = session?.entries ?? [];
-  $: if (displayedIds.length > 0 && selectedId === null) {
-    selectedId = displayedIds[0];
-  }
   $: selectedEntry  = entries.find(e => e.id === selectedId) ?? null;
   $: selectedMeta   = (selectedId && session?.papers[selectedId]) || null;
 
+  // Auto-select first paper when displayedIds populates and nothing selected
+  $: if (displayedIds.length > 0 && selectedId === null) {
+    selectedId = displayedIds[0];
+  }
 
   // ── Dirty tracking ─────────────────────────────────────────────────────────
   function markDirty() { dirty = true; }
 
   // ── beforeunload ───────────────────────────────────────────────────────────
   function handleBeforeUnload(e: BeforeUnloadEvent) {
-    if (dirty) {
-      e.preventDefault();
-      e.returnValue = '';
-    }
+    if (dirty) { e.preventDefault(); e.returnValue = ''; }
   }
 
   onMount(() => window.addEventListener('beforeunload', handleBeforeUnload));
@@ -67,13 +67,16 @@
     selectedId = null;
     dirty = false;
     showNewSessionModal = false;
+    activeView = 'review';
   }
 
   async function handleOpenSession(file: File) {
     if (dirty && !confirm('You have unsaved changes. Open a different session anyway?')) return;
     try {
       session = await readSessionFile(file);
+      selectedId = null;
       dirty = false;
+      activeView = 'review';
     } catch {
       alert('Could not load session file. Make sure it is a valid Prism session.');
     }
@@ -90,10 +93,8 @@
     if (!session) return;
     const text = await file.text();
     const parsed = parseBib(text);
-
     const existingIds = new Set(session.entries.map(e => e.id));
     const newEntries = parsed.filter(e => !existingIds.has(e.id));
-
     session.entries = [...session.entries, ...newEntries];
     session = session;
     markDirty();
@@ -116,17 +117,13 @@
   function addDimension(label: string) {
     if (!session) return;
     const color = PALETTE[session.dimensions.length % PALETTE.length];
-    session.dimensions = [...session.dimensions, {
-      id: crypto.randomUUID(), label, color, tags: [],
-    }];
+    session.dimensions = [...session.dimensions, { id: crypto.randomUUID(), label, color, tags: [], }];
     markDirty();
   }
 
   function updateDimensionColor(dimId: string, color: string) {
     if (!session) return;
-    session.dimensions = session.dimensions.map(d =>
-      d.id === dimId ? { ...d, color } : d
-    );
+    session.dimensions = session.dimensions.map(d => d.id === dimId ? { ...d, color } : d );
     session = session;
     markDirty();
   }
@@ -174,16 +171,22 @@
     markDirty();
   }
 
-  // ── Export list content ─────────────────────────────────────────────────────────
-  function handleExportBib(entries: BibEntry[]) {
-    const content = exportBib(entries);
+  // ── Export ─────────────────────────────────────────────────────────
+  function handleExportBib(entriesToExport: BibEntry[]) {
+    const content = exportBib(entriesToExport);
     downloadFile(content, `${session?.name ?? 'prism'}-export.bib`, 'text/plain');
   }
 
-  function handleExportCsv(entries: BibEntry[]) {
+  function handleExportCsv(entriesToExport: BibEntry[]) {
     if (!session) return;
-    const content = exportCsv(entries, session.papers, session.dimensions);
+    const content = exportCsv(entriesToExport, session.papers, session.dimensions);
     downloadFile(content, `${session?.name ?? 'prism'}-export.csv`, 'text/csv');
+  }
+
+  // ── Analysis → select paper ────────────────────────────────────────────────
+  function handleSelectPaperFromAnalysis(id: string) {
+    activeView = 'review';
+    selectedId = id;
   }
 </script>
 
@@ -199,10 +202,12 @@
 <TopBar
   {session}
   {dirty}
+  {activeView}
   onNewSession={handleNewSession}
   onOpenSession={handleOpenSession}
   onSaveSession={handleSaveSession}
   onAddBib={handleAddBib}
+  onViewChange={(v) => { activeView = v; }}
 />
 
 <!-- Body -->
@@ -226,6 +231,12 @@
       </div>
     </div>
 
+  {:else if activeView === 'analysis'}
+    <AnalysisPanel
+      {session}
+      onSelectPaper={handleSelectPaperFromAnalysis}
+    />
+
   {:else if entries.length === 0}
     <!-- Session open but no papers -->
     <div class="flex-1 flex flex-col items-center justify-center gap-3 text-center">
@@ -241,8 +252,8 @@
       <!-- Left: paper list -->
       <PaperList
         {entries}
-        papers={session?.papers ?? {}}
-        dimensions={session?.dimensions ?? []}
+        papers={session.papers}
+        dimensions={session.dimensions}
         defaultTab={entries.some(e => (session?.papers[e.id]?.status ?? 'unsorted') === 'unsorted') ? 'unsorted' : 'accepted'}
         {selectedId}
         onSelect={(id) => { selectedId = id; }}
